@@ -1,0 +1,5 @@
+(
+  title: "amethyst: click",
+  dimensions: Some((500, 500)),
+  fullscreen: false,
+)

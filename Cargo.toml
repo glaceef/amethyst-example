@@ -1,0 +1,28 @@
+[package]
+name = "amethyst-test"
+version = "0.1.0"
+authors = ["glaceef <masaki7322_art@yahoo.co.jp>"]
+edition = "2018"
+
+[dependencies]
+amethyst = "*"
+
+[[example]]
+name = "01"
+path = "examples/01_create_window/main.rs"
+
+[[example]]
+name = "02"
+path = "examples/02_image/main.rs"
+
+[[example]]
+name = "03"
+path = "examples/03_key_input/main.rs"
+
+[[example]]
+name = "04"
+path = "examples/04_move_image/main.rs"
+
+[[example]]
+name = "05"
+path = "examples/05_click/main.rs"
