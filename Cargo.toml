@@ -30,3 +30,7 @@ path = "examples/05_click/main.rs"
 [[example]]
 name = "06"
 path = "examples/06_create_item/main.rs"
+
+[[example]]
+name = "07"
+path = "examples/07_bounding_icon/main.rs"
