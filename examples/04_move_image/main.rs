@@ -41,6 +41,7 @@ struct Image {
     height: f32,
 }
 
+// world.register::<Image>()するために必要
 impl Component for Image {
     type Storage = DenseVecStorage<Self>;
 }

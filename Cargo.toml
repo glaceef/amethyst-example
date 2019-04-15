@@ -26,3 +26,7 @@ path = "examples/04_move_image/main.rs"
 [[example]]
 name = "05"
 path = "examples/05_click/main.rs"
+
+[[example]]
+name = "06"
+path = "examples/06_create_item/main.rs"
