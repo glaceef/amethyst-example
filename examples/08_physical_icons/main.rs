@@ -12,14 +12,13 @@ use amethyst::{
         SpriteRender, SpriteSheet, SpriteSheetFormat, SpriteSheetHandle,
         Texture, TextureMetadata
     },
-    input::{is_key_down, Bindings, InputBundle, InputHandler},
+    input::{is_key_down, Bindings, InputBundle},
     assets::{
         Loader, AssetStorage
     },
     winit::{Event, WindowEvent, ElementState, MouseButton, VirtualKeyCode},
 };
 
-// Transformを別に付けられるので位置情報は要らない
 struct Icon {
     r: f32,
     v: [f32; 2],
@@ -29,7 +28,7 @@ impl Component for Icon {
     type Storage = DenseVecStorage<Self>; // TODO::ここの種類調べる
 }
 
-struct ExampleState;
+struct ExampleState(u32);
 
 impl SimpleState for ExampleState {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
@@ -45,32 +44,30 @@ impl SimpleState for ExampleState {
     ) -> SimpleTrans {
         let world = data.world;
         if let StateEvent::Window(e) = event {
-            // TODO::ここあとで関数化
-            if let Event::WindowEvent { ref event, .. } = e { // refがないとmoveがおきる
-                if let WindowEvent::MouseInput{ state, button, .. } = event {
-                    match (state, button) {
-                        (ElementState::Pressed, MouseButton::Left) => {
-                            let sprite_sheet_handle = load_sprite_sheet(world);
-                            let sprite_render = SpriteRender {
-                                sprite_sheet: sprite_sheet_handle.clone(),
-                                sprite_number: 0, // spritesheetのspritesのインデックス？
-                            };
-                            let mut transform = Transform::default();
-                            transform.set_xyz(250.0, 250.0, 0.0);
-                            world
-                                .create_entity()
-                                .with(sprite_render)
-                                .with(Icon{
-                                    r: 25.0,
-                                    v: [60.0, 45.0],
-                                })
-                                .with(transform)
-                                .build();
-                            println!("create!");
-                        }
-                        _ => {}
-                    }
-                }
+            if is_mouse_down(&e, MouseButton::Left) {
+                let sprite_render = SpriteRender {
+                    sprite_sheet: load_sprite_sheet(world),
+                    sprite_number: 0,
+                };
+                let mut transform = Transform::default();
+                transform.set_xyz(250.0, 250.0, 0.0);
+                let v = {
+                    use rand::Rng;
+                    let mut rng = rand::thread_rng();
+                    [
+                        rng.gen_range(50.0, 100.0) * if rng.gen::<bool>() { 1.0 } else { -1.0 },
+                        rng.gen_range(50.0, 100.0) * if rng.gen::<bool>() { 1.0 } else { -1.0 },
+                    ]
+                };
+                world
+                    .create_entity()
+                    .with(sprite_render)
+                    .with(Icon{
+                        r: 25.0,
+                        v,
+                    })
+                    .with(transform)
+                    .build();
             }
 
             if is_key_down(&e, VirtualKeyCode::Escape) {
@@ -81,21 +78,42 @@ impl SimpleState for ExampleState {
     }
 }
 
-struct ExampleSystem;
+struct MovingSystem;
 
-impl<'s> System<'s> for ExampleSystem {
-    // TODO::WriteStorageが2つでも大丈夫か試す
+impl<'s> System<'s> for MovingSystem {
     type SystemData = (
         WriteStorage<'s, Transform>,
-        WriteStorage<'s, Icon>,
+        ReadStorage<'s, Icon>,
         Read<'s, Time>
     );
 
-    fn run(&mut self, (mut transforms, mut icons, time): Self::SystemData) {
-        for (transform, mut icon) in (&mut transforms, &mut icons).join() {
+    fn run(&mut self, (mut transforms, icons, time): Self::SystemData) {
+        for (transform, icon) in (&mut transforms, &icons).join() {
+            transform.translate_xyz(
+                icon.v[0] * time.delta_seconds(),
+                icon.v[1] * time.delta_seconds(),
+                0.0
+            );
+        }
+    }
+}
+
+struct BoundingSystem;
+
+impl<'s> System<'s> for BoundingSystem {
+    type SystemData = (
+        ReadStorage<'s, Transform>,
+        WriteStorage<'s, Icon>,
+        ReadStorage<'s, Transform>
+    );
+
+    fn run(&mut self, (transforms, mut icons, others): Self::SystemData) {
+        let others: Vec<(&Transform,)> = (&others,).join().collect();
+        for (transform, icon) in (&transforms, &mut icons).join() {
             let translation = transform.translation();
             let (x, y) = (translation.x, translation.y);
 
+            // 壁に対する跳ね返り
             let (width, height) = (500.0, 500.0);
             let r = icon.r;
             if x < r || width - r <= x {
@@ -105,11 +123,13 @@ impl<'s> System<'s> for ExampleSystem {
                 icon.v[1] *= -1.0;
             }
 
-            transform.translate_xyz(
-                icon.v[0] * time.delta_seconds(),
-                icon.v[1] * time.delta_seconds(),
-                0.0
-            );
+            // 他のiconとの接触
+            for (t,) in others.iter() {
+                if dist(transform, t) <= 50.0 && &transform != t {
+                    icon.v[0] *= -1.0;
+                    icon.v[1] *= -1.0;
+                }
+            }
         }
     }
 }
@@ -122,7 +142,7 @@ fn main() -> amethyst::Result<()> {
             .clear_target([0.0, 0.0, 0.0, 1.0], 1.0)
             .with_pass(DrawFlat2D::new())
     );
-    let config = DisplayConfig::load("./examples/07_bounding_icon/config.ron");
+    let config = DisplayConfig::load("./examples/08_physical_icons/config.ron");
     let render_bundle = RenderBundle::new(pipe, Some(config));
 
     let transform_bundle = TransformBundle::new();
@@ -134,9 +154,14 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(render_bundle.with_sprite_sheet_processor())?
         .with_bundle(transform_bundle)?
         .with_bundle(input_bundle)?
-        .with(ExampleSystem, "system", &[]);
+        .with(MovingSystem, "moving_system", &[])
+        .with(BoundingSystem, "bounding_system", &[]);
 
-    let mut game = Application::new("./examples/07_bounding_icon/", ExampleState, game_data)?;
+    let mut game = Application::new(
+        "./examples/08_physical_icons/",
+        ExampleState(0),
+        game_data
+    )?;
 
     game.run();
 
@@ -177,4 +202,26 @@ fn load_sprite_sheet(world: &mut World) -> SpriteSheetHandle {
         (),
         &sprite_sheet_store,
     )
+}
+
+fn is_mouse_down(event: &Event, mouse_button: MouseButton) -> bool {
+    if let Event::WindowEvent { ref event, .. } = event { // refがないとmoveがおきる
+        if let WindowEvent::MouseInput{ state, button, .. } = event {
+            match (state, button) {
+                (ElementState::Pressed, mouse_button) => {
+                    return true
+                }
+                _ => {}
+            }
+        }
+    }
+    false
+}
+
+fn dist(t1: &Transform, t2: &Transform) -> f32 {
+    let t1 = t1.translation();
+    let t2 = t2.translation();
+    let dist_x = (t1.x - t2.x).abs();
+    let dist_y = (t1.y - t2.y).abs();
+    dist_x.hypot(dist_y)
 }
