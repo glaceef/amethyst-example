@@ -126,8 +126,18 @@ impl<'s> System<'s> for BoundingSystem {
             // 他のiconとの接触
             for (t,) in others.iter() {
                 if dist(transform, t) <= 50.0 && &transform != t {
-                    icon.v[0] *= -1.0;
-                    icon.v[1] *= -1.0;
+                    let (gx, gy) = {
+                        let translation = t.translation();
+                        (translation.x, translation.y)
+                    };
+                    let fg = Vector2::new(gx - x, gy - y);
+                    let fg_rad = fg.atan2();
+                    let v = Vector2::new(icon.v[0], icon.v[1]);
+                    let v_rad = v.atan2();
+                    let theta = fg_rad - v_rad;
+                    let vv = fg.normalized() * (v.mag() * theta.cos());
+                    let new_v = fg - vv;
+                    icon.v = [new_v.x, new_v.y];
                 }
             }
         }
@@ -224,4 +234,53 @@ fn dist(t1: &Transform, t2: &Transform) -> f32 {
     let dist_x = (t1.x - t2.x).abs();
     let dist_y = (t1.y - t2.y).abs();
     dist_x.hypot(dist_y)
+}
+
+use std::ops::{Sub, Mul};
+
+struct Vector2 {
+    x: f32,
+    y: f32,
+}
+
+impl Vector2 {
+    fn new(x: f32, y: f32) -> Self {
+        Vector2{ x, y }
+    }
+
+    fn mag(&self) -> f32 {
+        self.x.hypot(self.y)
+    }
+
+    fn atan2(&self) -> f32 {
+        self.y.atan2(self.y)
+    }
+
+    fn normalized(&self) -> Self {
+        let len = self.mag();
+        Vector2{
+            x: self.x / len,
+            y: self.y / len
+        }
+    }
+}
+
+impl Sub for Vector2 {
+    type Output = Self;
+    fn sub(self, rhm: Self) -> Self::Output {
+        Vector2{
+            x: self.x - rhm.x,
+            y: self.y - rhm.y
+        }
+    }
+}
+
+impl Mul<f32> for Vector2 {
+    type Output = Self;
+    fn mul(self, rhm: f32) -> Self::Output {
+        Vector2{
+            x: self.x * rhm,
+            y: self.y * rhm
+        }
+    }
 }
