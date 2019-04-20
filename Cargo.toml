@@ -4,10 +4,14 @@ version = "0.1.0"
 authors = ["glaceef <masaki7322_art@yahoo.co.jp>"]
 edition = "2018"
 
+[lib]
+name = "amethyst_test"
+
 [dependencies]
 amethyst = "*"
 
 [dev-dependencies]
+amethyst = "*"
 rand = "*"
 
 [[example]]
@@ -41,3 +45,7 @@ path = "examples/07_bounding_icons/main.rs"
 [[example]]
 name = "08"
 path = "examples/08_physical_icons/main.rs"
+
+[[example]]
+name = "09"
+path = "examples/09_dragging_icon/main.rs"
