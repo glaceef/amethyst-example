@@ -2,7 +2,7 @@ use amethyst::{
     prelude::*,
     ecs::prelude::{
         System, Component, DenseVecStorage,
-        WriteStorage, ReadStorage, Read,
+        Write, Read, WriteStorage, ReadStorage,
         Join
     },
     core::transform::{
@@ -34,9 +34,11 @@ impl SimpleState for ExampleState {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
         initialise_camera(world);
-        initialise_mouse(world);
+        // initialise_mouse(world);
         world.register::<Icon>();
         initialise_icon(world);
+
+        world.add_resource(Mouse::default());
     }
 
     fn handle_event(
@@ -54,6 +56,8 @@ impl SimpleState for ExampleState {
     }
 }
 
+/* Readと同じようにWriteがある */
+
 #[derive(Default)]
 struct Mouse {
     x: f32,
@@ -63,20 +67,19 @@ struct Mouse {
     press: bool,
 }
 
-impl Component for Mouse {
-    type Storage = DenseVecStorage<Self>;
-}
+// impl Component for Mouse {
+//     type Storage = DenseVecStorage<Self>;
+// }
 
 struct MouseSystem;
 
 impl<'s> System<'s> for MouseSystem {
     type SystemData = (
-        WriteStorage<'s, Mouse>,
+        Write<'s, Mouse>,
         Read<'s, InputHandler<String, String>>
     );
 
     fn run(&mut self, (mut mouse, input): Self::SystemData) {
-        let mouse = (&mut mouse).join().next().unwrap();
         mouse.press = input.mouse_button_is_down(MouseButton::Left);
         if let Some(mouse_pos) = input.mouse_position() {
             let (x, y) = (mouse_pos.0 as f32, mouse_pos.1 as f32);
@@ -94,11 +97,10 @@ impl<'s> System<'s> for DragSystem {
     type SystemData = (
         WriteStorage<'s, Icon>,
         ReadStorage<'s, Transform>,
-        ReadStorage<'s, Mouse>
+        Read<'s, Mouse>
     );
 
     fn run(&mut self, (mut icons, transforms, mouse): Self::SystemData) {
-        let mouse = mouse.join().next().unwrap();
         if mouse.press {
             for (icon, transform) in (&mut icons, &transforms).join() {
                 let translation = transform.translation();
@@ -119,11 +121,10 @@ impl<'s> System<'s> for MoveSystem {
     type SystemData = (
         ReadStorage<'s, Icon>,
         WriteStorage<'s, Transform>,
-        ReadStorage<'s, Mouse>,
+        Read<'s, Mouse>,
     );
 
     fn run(&mut self, (icons, mut transforms, mouse): Self::SystemData) {
-        let mouse = mouse.join().next().unwrap();
         for (icon, transform) in (&icons, &mut transforms).join() {
             if icon.0 {
                 transform.translate_xyz(mouse.mx, -mouse.my, 0.0);
@@ -167,13 +168,13 @@ fn main() -> amethyst::Result<()> {
     Ok(())
 }
 
-fn initialise_mouse(world: &mut World) {
-    world.register::<Mouse>();
-    world
-        .create_entity()
-        .with(Mouse::default())
-        .build();
-}
+// fn initialise_mouse(world: &mut World) {
+//     world.register::<Mouse>();
+//     world
+//         .create_entity()
+//         .with(Mouse::default())
+//         .build();
+// }
 
 fn initialise_icon(world: &mut World) {
     let sprite_render = SpriteRender {
