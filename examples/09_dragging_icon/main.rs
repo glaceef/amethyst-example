@@ -56,8 +56,6 @@ impl SimpleState for ExampleState {
     }
 }
 
-/* Readと同じようにWriteがある */
-
 #[derive(Default)]
 struct Mouse {
     x: f32,
@@ -66,10 +64,6 @@ struct Mouse {
     my: f32,
     press: bool,
 }
-
-// impl Component for Mouse {
-//     type Storage = DenseVecStorage<Self>;
-// }
 
 struct MouseSystem;
 
@@ -82,9 +76,9 @@ impl<'s> System<'s> for MouseSystem {
     fn run(&mut self, (mut mouse, input): Self::SystemData) {
         mouse.press = input.mouse_button_is_down(MouseButton::Left);
         if let Some(mouse_pos) = input.mouse_position() {
-            let (x, y) = (mouse_pos.0 as f32, mouse_pos.1 as f32);
+            let (x, y) = (mouse_pos.0 as f32, 500.0 - mouse_pos.1 as f32);
             mouse.mx = x - mouse.x;
-            mouse.my = y - mouse.y;
+            mouse.my = -(y - mouse.y);
             mouse.x = x;
             mouse.y = y;
         }
@@ -105,7 +99,9 @@ impl<'s> System<'s> for DragSystem {
             for (icon, transform) in (&mut icons, &transforms).join() {
                 let translation = transform.translation();
                 let (x, y) = (translation.x, translation.y);
-                icon.0 = dist(x, y, mouse.x, mouse.y) <= 25.0;
+                let d = dist(x, y, mouse.x, mouse.y);
+                println!("x: {}, y: {}, mx: {}, my: {}, dist: {}", x, y, mouse.x, mouse.y, d);
+                icon.0 = d <= 25.0;
             }
         } else {
             for icon in (&mut icons).join() {
