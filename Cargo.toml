@@ -49,3 +49,7 @@ path = "examples/08_physical_icons/main.rs"
 [[example]]
 name = "09"
 path = "examples/09_dragging_icon/main.rs"
+
+[[example]]
+name = "10"
+path = "examples/10_mouse_getdown/main.rs"

@@ -1,16 +1,23 @@
 use amethyst::{
     prelude::*,
+    ecs::prelude::{
+        System,
+        Write, Read,
+    },
     core::transform::Transform,
     renderer::{
         Camera, Projection,
         SpriteSheet, SpriteSheetHandle, SpriteSheetFormat, PngFormat,
         Texture, TextureMetadata,
     },
+    input::{
+        InputHandler,
+    },
     assets::{
         Loader, AssetStorage,
     },
     winit::{
-        Event, WindowEvent, ElementState, MouseButton, VirtualKeyCode
+        Event, WindowEvent, ElementState, MouseButton
     },
 };
 
@@ -50,11 +57,11 @@ pub fn load_sprite_sheet(world: &mut World) -> SpriteSheetHandle {
     )
 }
 
-pub fn is_mouse_down(event: &Event, button: MouseButton) -> bool {
+pub fn is_mouse_down(event: &Event, mouse_button: MouseButton) -> bool {
     if let Event::WindowEvent { ref event, .. } = event { // refがないとmoveがおきる
         if let WindowEvent::MouseInput{ state, button, .. } = event {
             match (state, button) {
-                (ElementState::Pressed, b) if b == button => {
+                (ElementState::Pressed, b) if *b == mouse_button => {
                     return true;
                 }
                 _ => {}
@@ -62,4 +69,37 @@ pub fn is_mouse_down(event: &Event, button: MouseButton) -> bool {
         }
     }
     false
+}
+
+pub mod mouse {
+    use super::*;
+
+    #[derive(Default)]
+    pub struct Mouse {
+        pub x: f32,
+        pub y: f32,
+        pub mx: f32,
+        pub my: f32,
+        pub press: bool,
+    }
+
+    pub struct MouseSystem;
+
+    impl<'s> System<'s> for MouseSystem {
+        type SystemData = (
+            Write<'s, Mouse>,
+            Read<'s, InputHandler<String, String>>
+        );
+
+        fn run(&mut self, (mut mouse, input): Self::SystemData) {
+            mouse.press = input.mouse_button_is_down(MouseButton::Left);
+            if let Some(mouse_pos) = input.mouse_position() {
+                let (x, y) = (mouse_pos.0 as f32, 500.0 - mouse_pos.1 as f32);
+                mouse.mx = x - mouse.x;
+                mouse.my = y - mouse.y;
+                mouse.x = x;
+                mouse.y = y;
+            }
+        }
+    }
 }

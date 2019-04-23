@@ -2,7 +2,7 @@ use amethyst::{
     prelude::*,
     ecs::prelude::{
         System, Component, DenseVecStorage,
-        Write, Read, WriteStorage, ReadStorage,
+        Read, WriteStorage, ReadStorage,
         Join
     },
     core::transform::{
@@ -13,14 +13,18 @@ use amethyst::{
         SpriteRender
     },
     input::{
-        is_key_down, Bindings, InputBundle, InputHandler
+        is_key_down, Bindings, InputBundle
     },
     winit::{
-        VirtualKeyCode, MouseButton
+        VirtualKeyCode
     },
 };
 
-use amethyst_test::*;
+use amethyst_test::{
+    initialise_camera,
+    load_sprite_sheet,
+    mouse::*,
+};
 
 struct Icon(bool);
 
@@ -33,12 +37,12 @@ struct ExampleState;
 impl SimpleState for ExampleState {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
+
         initialise_camera(world);
-        // initialise_mouse(world);
+        world.add_resource(Mouse::default());
+
         world.register::<Icon>();
         initialise_icon(world);
-
-        world.add_resource(Mouse::default());
     }
 
     fn handle_event(
@@ -46,7 +50,6 @@ impl SimpleState for ExampleState {
         _data: StateData<'_, GameData<'_, '_>>,
         event: StateEvent,
     ) -> SimpleTrans {
-        // let world = data.world;
         if let StateEvent::Window(e) = event {
             if is_key_down(&e, VirtualKeyCode::Escape) {
                 return Trans::Quit;
@@ -56,34 +59,34 @@ impl SimpleState for ExampleState {
     }
 }
 
-#[derive(Default)]
-struct Mouse {
-    x: f32,
-    y: f32,
-    mx: f32,
-    my: f32,
-    press: bool,
-}
-
-struct MouseSystem;
-
-impl<'s> System<'s> for MouseSystem {
-    type SystemData = (
-        Write<'s, Mouse>,
-        Read<'s, InputHandler<String, String>>
-    );
-
-    fn run(&mut self, (mut mouse, input): Self::SystemData) {
-        mouse.press = input.mouse_button_is_down(MouseButton::Left);
-        if let Some(mouse_pos) = input.mouse_position() {
-            let (x, y) = (mouse_pos.0 as f32, 500.0 - mouse_pos.1 as f32);
-            mouse.mx = x - mouse.x;
-            mouse.my = y - mouse.y;
-            mouse.x = x;
-            mouse.y = y;
-        }
-    }
-}
+// #[derive(Default)]
+// struct Mouse {
+//     x: f32,
+//     y: f32,
+//     mx: f32,
+//     my: f32,
+//     press: bool,
+// }
+//
+// struct MouseSystem;
+//
+// impl<'s> System<'s> for MouseSystem {
+//     type SystemData = (
+//         Write<'s, Mouse>,
+//         Read<'s, InputHandler<String, String>>
+//     );
+//
+//     fn run(&mut self, (mut mouse, input): Self::SystemData) {
+//         mouse.press = input.mouse_button_is_down(MouseButton::Left);
+//         if let Some(mouse_pos) = input.mouse_position() {
+//             let (x, y) = (mouse_pos.0 as f32, 500.0 - mouse_pos.1 as f32);
+//             mouse.mx = x - mouse.x;
+//             mouse.my = y - mouse.y;
+//             mouse.x = x;
+//             mouse.y = y;
+//         }
+//     }
+// }
 
 struct DragSystem;
 
@@ -163,14 +166,6 @@ fn main() -> amethyst::Result<()> {
 
     Ok(())
 }
-
-// fn initialise_mouse(world: &mut World) {
-//     world.register::<Mouse>();
-//     world
-//         .create_entity()
-//         .with(Mouse::default())
-//         .build();
-// }
 
 fn initialise_icon(world: &mut World) {
     let sprite_render = SpriteRender {
