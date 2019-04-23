@@ -78,7 +78,7 @@ impl<'s> System<'s> for MouseSystem {
         if let Some(mouse_pos) = input.mouse_position() {
             let (x, y) = (mouse_pos.0 as f32, 500.0 - mouse_pos.1 as f32);
             mouse.mx = x - mouse.x;
-            mouse.my = -(y - mouse.y);
+            mouse.my = y - mouse.y;
             mouse.x = x;
             mouse.y = y;
         }
@@ -123,7 +123,7 @@ impl<'s> System<'s> for MoveSystem {
     fn run(&mut self, (icons, mut transforms, mouse): Self::SystemData) {
         for (icon, transform) in (&icons, &mut transforms).join() {
             if icon.0 {
-                transform.translate_xyz(mouse.mx, -mouse.my, 0.0);
+                transform.translate_xyz(mouse.mx, mouse.my, 0.0);
             }
         }
     }
