@@ -80,6 +80,7 @@ pub mod mouse {
         pub mx: f32,
         pub my: f32,
 
+        // ここらへんは公開範囲を限定してpubにする？
         state: HashMap<MouseButton, bool>,
         press: HashSet<MouseButton>,
         release: HashSet<MouseButton>,
