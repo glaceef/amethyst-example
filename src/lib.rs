@@ -74,13 +74,42 @@ pub fn is_mouse_down(event: &Event, mouse_button: MouseButton) -> bool {
 pub mod mouse {
     use super::*;
 
-    #[derive(Default)]
     pub struct Mouse {
         pub x: f32,
         pub y: f32,
         pub mx: f32,
         pub my: f32,
-        pub press: bool,
+
+        state: HashMap<MouseButton, bool>,
+        press: HashSet<MouseButton>,
+        release: HashSet<MouseButton>,
+    }
+    impl Mouse {
+        pub fn new() -> Self {
+            let mut state = HashMap::new();
+                state.insert(MouseButton::Left,   false);
+                state.insert(MouseButton::Right,  false);
+                state.insert(MouseButton::Middle, false);
+            Mouse {
+                state,
+                ..Default::default
+            }
+        }
+
+        pub fn get(&self, button: MouseButton) -> bool {
+            match self.state.get(&button) {
+                Some(true) => { true }
+                _ => { false }
+            }
+        }
+
+        pub fn get_down(&self, button: MouseButton) -> bool {
+            self.press.contains(&button)
+        }
+
+        pub fn get_up(&self, button: MouseButton) -> bool {
+            self.release.contains(&button)
+        }
     }
 
     pub struct MouseSystem;
@@ -92,7 +121,6 @@ pub mod mouse {
         );
 
         fn run(&mut self, (mut mouse, input): Self::SystemData) {
-            mouse.press = input.mouse_button_is_down(MouseButton::Left);
             if let Some(mouse_pos) = input.mouse_position() {
                 let (x, y) = (mouse_pos.0 as f32, 500.0 - mouse_pos.1 as f32);
                 mouse.mx = x - mouse.x;
@@ -100,6 +128,44 @@ pub mod mouse {
                 mouse.x = x;
                 mouse.y = y;
             }
+
+            // --------------
+            let iter = input.mouse_buttons_that_are_down();
+            let down_buttons: HashSet<&MouseButton> = HashSet::from_iter(iter);
+
+            mouse.press.clear();
+            let mut iter = down_buttons.iter();
+            while let Some(button) = iter.next() {
+                match mouse.state.get(button) {
+                    Some(true) => {}
+                    _ => {
+                        mouse.press.insert(**button);
+                    }
+                }
+            }
+
+            let mut vec = vec![]; // 一度配列に退避させないとエラー
+            for (button, state) in mouse.state.iter() {
+                if *state {
+                    if !down_buttons.contains(button) {
+                        vec.push(*button);
+                    }
+                }
+            }
+            mouse.release.clear();
+            for b in vec {
+                mouse.release.insert(b);
+            }
+
+            for (_, state) in mouse.state.iter_mut() {
+                *state = false;
+            }
+
+            let mut iter = down_buttons.iter();
+            while let Some(button) = iter.next() {
+                *mouse.state.entry(**button).or_insert(true) = true;
+            }
+            // -------------------
         }
     }
 }
