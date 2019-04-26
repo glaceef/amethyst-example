@@ -4,7 +4,9 @@ use amethyst::{
         TransformBundle, Transform
     },
     renderer::{
-        DisplayConfig, DrawFlat2D, Pipeline, RenderBundle, Stage, Camera,
+        Pipeline, Stage, DrawFlat2D, ColorMask, DepthMode, ALPHA,
+        DisplayConfig, RenderBundle,
+        Camera,
         SpriteRender
     },
     input::{
@@ -23,12 +25,6 @@ use amethyst_test::{
     initialise_camera,
     load_sprite_sheet
 };
-
-/*
-[everpazzle/src/systems/block_system.rs]
-sprites.get_mut(stack[i]).unwrap().sprite_number =
-    b.kind as usize * 8 + b.anim_offset as usize;
-*/
 
 struct Player;
 
@@ -75,9 +71,9 @@ impl SimpleState for ExampleState {
     }
 }
 
-struct PlayerSystem(usize);
+struct PlayerTextureSystem(usize);
 
-impl<'s> System<'s> for PlayerSystem {
+impl<'s> System<'s> for PlayerTextureSystem {
     type SystemData = (
         ReadStorage<'s, Player>,
         WriteStorage<'s, SpriteRender>
@@ -101,7 +97,11 @@ fn main() -> amethyst::Result<()> {
     let pipe = Pipeline::build().with_stage(
         Stage::with_backbuffer()
             .clear_target([1.0; 4], 1.0)
-            .with_pass(DrawFlat2D::new())
+            .with_pass(DrawFlat2D::new().with_transparency(
+                ColorMask::all(),
+                ALPHA,
+                Some(DepthMode::LessEqualWrite)
+            ))
     );
     let config = DisplayConfig::load("./examples/11_animation/config.ron");
     let render_bundle = RenderBundle::new(pipe, Some(config));
@@ -115,7 +115,7 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(render_bundle.with_sprite_sheet_processor())?
         .with_bundle(input_bundle)?
         .with_bundle(transform_bundle)?
-        .with(PlayerSystem(0), "player_system", &[]);
+        .with(PlayerTextureSystem(0), "player_texture_system", &[]);
 
     Application::new("./examples/11_animation/", ExampleState, game_data)?.run();
 
