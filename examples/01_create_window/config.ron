@@ -1,11 +1,4 @@
 (
-  title: "amethyst: create_window",
-  icon: None,
-  fullscreen: false,
+  title: "amethyst: 01_create_window",
   dimensions: Some((640, 480)),
-  max_dimensions: None,
-  min_dimensions: None,
-  visibility: true,
-  multisampling: 0,
-  vsync: false,
 )
