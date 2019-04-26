@@ -1,0 +1,4 @@
+(
+  title: "example: 11_animation",
+  dimensions: Some((500, 500))
+)

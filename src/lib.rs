@@ -88,6 +88,7 @@ pub mod mouse {
         press: HashSet<MouseButton>,
         release: HashSet<MouseButton>,
     }
+
     impl Mouse {
         pub fn new() -> Self {
             let mut state = HashMap::new();
