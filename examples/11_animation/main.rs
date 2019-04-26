@@ -9,9 +9,7 @@ use amethyst::{
         Camera,
         SpriteRender
     },
-    input::{
-        is_key_down, Bindings, InputBundle
-    },
+    input::is_key_down,
     ecs::prelude::{
         System,
         Component, DenseVecStorage,
@@ -59,7 +57,7 @@ impl SimpleState for ExampleState {
 
     fn handle_event(
         &mut self,
-        _data: StateData<'_, GameData<'_, '_>>,
+        _: StateData<'_, GameData<'_, '_>>,
         event: StateEvent,
     ) -> SimpleTrans {
         if let StateEvent::Window(e) = event {
@@ -106,14 +104,10 @@ fn main() -> amethyst::Result<()> {
     let config = DisplayConfig::load("./examples/11_animation/config.ron");
     let render_bundle = RenderBundle::new(pipe, Some(config));
 
-    let bindings = Bindings::<String, String>::new();
-    let input_bundle = InputBundle::new().with_bindings(bindings);
-
     let transform_bundle = TransformBundle::new();
 
     let game_data = GameDataBuilder::new()
         .with_bundle(render_bundle.with_sprite_sheet_processor())?
-        .with_bundle(input_bundle)?
         .with_bundle(transform_bundle)?
         .with(PlayerTextureSystem(0), "player_texture_system", &[]);
 
