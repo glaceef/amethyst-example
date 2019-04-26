@@ -33,12 +33,16 @@ pub fn initialise_camera(world: &mut World) {
         .build();
 }
 
-pub fn load_sprite_sheet(world: &mut World) -> SpriteSheetHandle {
+pub fn load_sprite_sheet(
+    world: &mut World,
+    image_path: impl Into<String>,
+    spritesheet: impl Into<String>
+) -> SpriteSheetHandle {
     let texture_handle = {
         let loader = world.read_resource::<Loader>();
         let texture_storage = world.read_resource::<AssetStorage<Texture>>();
         loader.load(
-            "icon.png",
+            image_path,
             PngFormat,
             TextureMetadata::srgb_scale(),
             (),
@@ -49,7 +53,7 @@ pub fn load_sprite_sheet(world: &mut World) -> SpriteSheetHandle {
     let loader = world.read_resource::<Loader>();
     let sprite_sheet_storage = world.read_resource::<AssetStorage<SpriteSheet>>();
     loader.load(
-        "spritesheet.ron",
+        spritesheet,
         SpriteSheetFormat,
         texture_handle,
         (),
