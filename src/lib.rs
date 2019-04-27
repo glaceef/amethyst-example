@@ -21,9 +21,20 @@ use amethyst::{
     },
 };
 
+pub trait TransformExt {
+    fn from_xyz(x: f32, y: f32, z: f32) -> Self;
+}
+impl TransformExt for Transform {
+    fn from_xyz(x: f32, y: f32, z: f32) -> Self {
+        let mut transform = Self::default();
+        transform.set_xyz(x, y, z);
+        transform
+    }
+}
+
 pub fn initialise_camera(world: &mut World) {
-    let mut transform = Transform::default();
-    transform.set_xyz(0.0, 0.0, 1.0);
+    world.register::<Camera>();
+    let transform = Transform::from_xyz(0.0, 0.0, 1.0);
     world
         .create_entity()
         .with(Camera::from(Projection::orthographic(
@@ -164,5 +175,9 @@ pub mod mouse {
             mouse.position_update(&input);
             mouse.state_update(&input);
         }
+    }
+
+    pub fn initialise_mouse(world: &mut World) {
+        world.add_resource(Mouse::new());
     }
 }

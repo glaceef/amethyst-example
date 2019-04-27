@@ -8,23 +8,42 @@ use amethyst::{
         DisplayConfig, RenderBundle,
         SpriteRender
     },
-    input::is_key_down,
+    input::{
+        InputBundle, InputHandler,
+        is_key_down
+    },
     ecs::prelude::{
         System,
         Component, DenseVecStorage,
-        ReadStorage, WriteStorage,
+        Read, ReadStorage, WriteStorage,
         Join
     },
-    winit::VirtualKeyCode,
+    winit::{
+        VirtualKeyCode
+    },
 };
 
 use amethyst_test::{
     TransformExt,
     initialise_camera,
-    load_sprite_sheet
+    load_sprite_sheet,
 };
 
-struct Player;
+#[derive(Debug)]
+enum State {
+    Idle, Right, Left
+}
+impl State {
+    fn offset(&self) -> usize {
+        match self {
+            State::Idle => 0,
+            State::Right => 3,
+            State::Left => 6,
+        }
+    }
+}
+
+struct Player(State);
 
 impl Component for Player {
     type Storage = DenseVecStorage<Self>;
@@ -62,8 +81,8 @@ impl<'s> System<'s> for PlayerTextureSystem {
     );
 
     fn run(&mut self, (player, mut sprite): Self::SystemData) {
-        if let Some((_player, sprite)) = (&player, &mut sprite).join().next() {
-            sprite.sprite_number = func(self.0, 3, 7);
+        if let Some((player, sprite)) = (&player, &mut sprite).join().next() {
+            sprite.sprite_number = func(self.0, 3, 7) + player.0.offset();
             self.0 += 1;
         }
 
@@ -73,9 +92,35 @@ impl<'s> System<'s> for PlayerTextureSystem {
     }
 }
 
-fn main() -> amethyst::Result<()> {
-    amethyst::start_logger(Default::default());
+struct PlayerMoveSystem;
 
+impl<'s> System<'s> for PlayerMoveSystem {
+    type SystemData = (
+        WriteStorage<'s, Player>,
+        WriteStorage<'s, Transform>,
+        Read<'s, InputHandler<String, String>>
+    );
+
+    fn run(&mut self, (mut player, mut transform, input): Self::SystemData) {
+        if let Some((player, transform)) = (&mut player, &mut transform).join().next() {
+            player.0 = match (
+                input.key_is_down(VirtualKeyCode::Left),
+                input.key_is_down(VirtualKeyCode::Right),
+            ) {
+                (true, false) => { State::Left }
+                (false, true) => { State::Right }
+                _ => { State::Idle }
+            };
+
+            let speed = 3.0;
+            let dx = input.axis_value("x_axis").unwrap() * speed;
+            let dy = input.axis_value("y_axis").unwrap() * speed;
+            transform.translate_xyz(dx as f32, dy as f32, 0.0);
+        }
+    }
+}
+
+fn main() -> amethyst::Result<()> {
     let pipe = Pipeline::build().with_stage(
         Stage::with_backbuffer()
             .clear_target([1.0; 4], 1.0)
@@ -85,17 +130,24 @@ fn main() -> amethyst::Result<()> {
                 Some(DepthMode::LessEqualWrite)
             ))
     );
-    let config = DisplayConfig::load("./examples/11_animation/config.ron");
+    let config = DisplayConfig::load("./examples/12_animation_and_move/config.ron");
     let render_bundle = RenderBundle::new(pipe, Some(config));
+
+    let input_bundle = InputBundle::<String, String>::new()
+        .with_bindings_from_file("./examples/12_animation_and_move/bindings.ron")?;
 
     let transform_bundle = TransformBundle::new();
 
     let game_data = GameDataBuilder::new()
         .with_bundle(render_bundle.with_sprite_sheet_processor())?
+        .with_bundle(input_bundle)?
         .with_bundle(transform_bundle)?
-        .with(PlayerTextureSystem(0), "player_texture_system", &[]);
+        .with(PlayerStateSystem, "player-state-system", &[])
+        .with(PlayerTextureSystem(0), "player-texture-system", &[])
+        .with(PlayerMoveSystem, "player-move-system", &[]);
 
-    Application::new("./examples/11_animation/", ExampleState, game_data)?.run();
+
+    Application::new("./examples/12_animation_and_move/", ExampleState, game_data)?.run();
 
     Ok(())
 }
@@ -110,7 +162,7 @@ fn initialise_player(world: &mut World) {
     };
     world
         .create_entity()
-        .with(Player)
+        .with(Player(State::Idle))
         .with(transform)
         .with(sprite_render)
         .build();

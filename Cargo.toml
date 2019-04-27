@@ -57,3 +57,7 @@ path = "examples/10_mouse_getdown/main.rs"
 [[example]]
 name = "11"
 path = "examples/11_animation/main.rs"
+
+[[example]]
+name = "12"
+path = "examples/12_animation_and_move/main.rs"
