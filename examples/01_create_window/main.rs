@@ -43,7 +43,7 @@ fn main() -> amethyst::Result<()> {
     let game_data = GameDataBuilder::new()
         .with_bundle(render_bundle)?;
     let mut game = Application::new(
-        "./01_create_window/",
+        "./examples/01_create_window/",
         ExampleState,
         game_data
     )?;
