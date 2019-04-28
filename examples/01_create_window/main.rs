@@ -34,7 +34,7 @@ fn main() -> amethyst::Result<()> {
     let pipe = Pipeline::build().with_stage(
         Stage::with_backbuffer()
             .clear_target([1.0; 4], 1.0)
-            .with_pass(DrawFlat2D::new()),
+            .with_pass(DrawFlat2D::new())
     );
 
     let config = DisplayConfig::load("./examples/01_create_window/config.ron");
