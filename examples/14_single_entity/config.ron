@@ -1,0 +1,4 @@
+(
+  title: "amethyst: 00_player",
+  dimensions: Some((500, 500)),
+)
