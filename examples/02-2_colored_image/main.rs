@@ -39,7 +39,7 @@ impl<'s> System<'s> for TextureSystem {
 
     fn run(&mut self, mut color: Self::SystemData) {
         if let Some(ref mut color) = (&mut color).join().next() {
-            let c = (self.0 as f32).to_radians().sin().abs();
+            let c = 1.0 - (self.0 as f32).to_radians().sin().abs();
             color.1 = c;
             color.2 = c;
         }
@@ -50,7 +50,7 @@ impl<'s> System<'s> for TextureSystem {
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(Default::default());
 
-    let config = DisplayConfig::load("./examples/13_colored_image/config.ron");
+    let config = DisplayConfig::load("./examples/02-2_colored_image/config.ron");
     let pipe = Pipeline::build().with_stage(
         Stage::with_backbuffer()
             .clear_target([0.0, 0.0, 0.0, 1.0], 1.0)
@@ -69,7 +69,7 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(transform_bundle)?
         .with(TextureSystem(0), "texture-system", &[]);
 
-    let mut game = Application::new("./examples/13_colored_image/", ExampleState, game_data)?;
+    let mut game = Application::new("./examples/02-2_colored_image/", ExampleState, game_data)?;
 
     game.run();
 

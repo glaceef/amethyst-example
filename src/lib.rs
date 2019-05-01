@@ -47,7 +47,7 @@ pub fn initialise_camera(world: &mut World) {
 pub fn load_sprite_sheet(
     world: &mut World,
     image_path: impl Into<String>,
-    spritesheet: impl Into<String>
+    spritesheet_path: impl Into<String>
 ) -> SpriteSheetHandle {
     let texture_handle = {
         let loader = world.read_resource::<Loader>();
@@ -64,7 +64,7 @@ pub fn load_sprite_sheet(
     let loader = world.read_resource::<Loader>();
     let sprite_sheet_storage = world.read_resource::<AssetStorage<SpriteSheet>>();
     loader.load(
-        spritesheet,
+        spritesheet_path,
         SpriteSheetFormat,
         texture_handle,
         (),

@@ -1,0 +1,32 @@
+#![enable(implicit_some)]
+Container(
+    transform: (
+        id: "background",
+        anchor: Middle,
+        stretch: XY( x_margin: 0., y_margin: 0.),
+        width: 20.,
+        height: 20.,
+    ),
+    background: (
+        image: Data(Rgba((1.0, 1.0, 1.0, 1.0), (channel: Srgb))),
+    ),
+    children: [
+        Text(
+            transform: (
+                id: "system_font",
+                x: 200.,
+                width: 400.,
+                height: 200.,
+                tab_order: 1,
+                anchor: MiddleLeft,
+            ),
+            text: (
+                text: "System Font",
+                font: File("square.ttf", Ttf, ()),
+                font_size: 30.,
+                color: (0.1, 0.3, 1.0, 1.0),
+                align: MiddleLeft,
+            )
+        ),
+    ],
+)

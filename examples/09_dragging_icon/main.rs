@@ -9,7 +9,8 @@ use amethyst::{
         Transform, TransformBundle
     },
     renderer::{
-        DisplayConfig, DrawFlat2D, Pipeline, RenderBundle, Stage,
+        Pipeline, Stage, DrawFlat2D, ColorMask, DepthMode, ALPHA,
+        DisplayConfig, RenderBundle,
         SpriteRender
     },
     input::{
@@ -26,7 +27,7 @@ use amethyst_test::{
     mouse::*,
 };
 
-struct Icon(bool);
+struct Icon;
 
 impl Component for Icon {
     type Storage = DenseVecStorage<Self>;
@@ -39,7 +40,7 @@ impl SimpleState for ExampleState {
         let world = data.world;
 
         initialise_camera(world);
-        world.add_resource(Mouse::default());
+        world.add_resource(Mouse::new());
 
         world.register::<Icon>();
         initialise_icon(world);
@@ -58,35 +59,6 @@ impl SimpleState for ExampleState {
         Trans::None
     }
 }
-
-// #[derive(Default)]
-// struct Mouse {
-//     x: f32,
-//     y: f32,
-//     mx: f32,
-//     my: f32,
-//     press: bool,
-// }
-//
-// struct MouseSystem;
-//
-// impl<'s> System<'s> for MouseSystem {
-//     type SystemData = (
-//         Write<'s, Mouse>,
-//         Read<'s, InputHandler<String, String>>
-//     );
-//
-//     fn run(&mut self, (mut mouse, input): Self::SystemData) {
-//         mouse.press = input.mouse_button_is_down(MouseButton::Left);
-//         if let Some(mouse_pos) = input.mouse_position() {
-//             let (x, y) = (mouse_pos.0 as f32, 500.0 - mouse_pos.1 as f32);
-//             mouse.mx = x - mouse.x;
-//             mouse.my = y - mouse.y;
-//             mouse.x = x;
-//             mouse.y = y;
-//         }
-//     }
-// }
 
 struct DragSystem;
 
@@ -138,7 +110,11 @@ fn main() -> amethyst::Result<()> {
     let pipe = Pipeline::build().with_stage(
         Stage::with_backbuffer()
             .clear_target([0.0, 0.0, 0.0, 1.0], 1.0)
-            .with_pass(DrawFlat2D::new())
+            .with_pass(DrawFlat2D::new().with_transparency(
+                ColorMask::all(),
+                ALPHA,
+                Some(DepthMode::LessEqualWrite)
+            ))
     );
     let config = DisplayConfig::load("./examples/09_dragging_icon/config.ron");
     let render_bundle = RenderBundle::new(pipe, Some(config));
@@ -169,7 +145,7 @@ fn main() -> amethyst::Result<()> {
 
 fn initialise_icon(world: &mut World) {
     let sprite_render = SpriteRender {
-        sprite_sheet: load_sprite_sheet(world),
+        sprite_sheet: load_sprite_sheet(world, "icon.png", "spritesheet.ron"),
         sprite_number: 0,
     };
     let mut transform = Transform::default();
@@ -177,7 +153,7 @@ fn initialise_icon(world: &mut World) {
     world
         .create_entity()
         .with(sprite_render)
-        .with(Icon(false))
+        .with(Icon)
         .with(transform)
         .build();
 }

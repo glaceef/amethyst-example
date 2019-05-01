@@ -1,4 +1,4 @@
 (
   title: "amethyst: 01_create_window",
-  dimensions: Some((500, 500)),
+  dimensions: Some((640, 480)),
 )
