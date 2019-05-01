@@ -23,6 +23,10 @@ name = "02"
 path = "examples/02_image/main.rs"
 
 [[example]]
+name = "02-2"
+path = "examples/02-2_colored_image/main.rs"
+
+[[example]]
 name = "03"
 path = "examples/03_key_input/main.rs"
 
