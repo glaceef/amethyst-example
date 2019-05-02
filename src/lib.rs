@@ -1,10 +1,12 @@
 use amethyst::{
     prelude::*,
-    ecs::prelude::{
-        System,
-        Write, Read,
+    core::{
+        bundle::{
+            SystemBundle,
+            Result as BundleResult,
+        },
+        transform::Transform
     },
-    core::transform::Transform,
     renderer::{
         Camera, Projection,
         SpriteSheet, SpriteSheetHandle, SpriteSheetFormat, PngFormat,
@@ -15,6 +17,11 @@ use amethyst::{
     },
     assets::{
         Loader, AssetStorage,
+    },
+    ecs::prelude::{
+        DispatcherBuilder,
+        System,
+        Write, Read,
     },
     winit::{
         Event, WindowEvent, ElementState, MouseButton
@@ -174,6 +181,38 @@ pub mod mouse {
         fn run(&mut self, (mut mouse, input): Self::SystemData) {
             mouse.position_update(&input);
             mouse.state_update(&input);
+        }
+    }
+
+    #[derive(Default)]
+    pub struct MouseBundle<'a> {
+        dep: &'a [&'a str]
+    }
+
+    impl<'a> MouseBundle<'a> {
+        pub fn new() -> Self {
+            Default::default()
+        }
+
+        pub fn with_dep(mut self, dep: &'a [&'a str]) -> Self {
+            self.dep = dep;
+            self
+        }
+    }
+
+    impl<'a, 'b, 'c> SystemBundle<'a, 'b> for MouseBundle<'c> {
+        fn build(self, builder: &mut DispatcherBuilder<'a, 'b>) -> BundleResult<()> {
+            let dep = {
+                let mut vec = self.dep.to_vec();
+                vec.push("input_system");
+                vec
+            };
+            builder.add(
+                MouseSystem,
+                "mouse_system",
+                &dep,
+            );
+            Ok(())
         }
     }
 

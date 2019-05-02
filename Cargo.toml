@@ -73,3 +73,7 @@ path = "examples/13_text/main.rs"
 [[example]]
 name = "14"
 path = "examples/14_single_entity/main.rs"
+
+[[example]]
+name = "15"
+path = "examples/15_delete_entity/main.rs"

@@ -56,7 +56,7 @@ fn main() -> amethyst::Result<()> {
 
     let game_data = GameDataBuilder::new()
         .with_bundle(render_bundle)?
-        .with_bundle(transform_bundle)?
+        // .with_bundle(transform_bundle)?
         .with_bundle(ui_bundle)?;
 
     Application::new(
