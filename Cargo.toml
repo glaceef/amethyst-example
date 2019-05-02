@@ -28,7 +28,7 @@ path = "examples/02-2_colored_image/main.rs"
 
 [[example]]
 name = "03"
-path = "examples/03_key_input/main.rs"
+path = "examples/03_move_to_mouse/main.rs"
 
 [[example]]
 name = "04"
