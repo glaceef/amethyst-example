@@ -15,6 +15,10 @@ amethyst = "*"
 rand = "*"
 
 [[example]]
+name = "00"
+path = "examples/00_create_and_destroy/main.rs"
+
+[[example]]
 name = "01"
 path = "examples/01_create_window/main.rs"
 

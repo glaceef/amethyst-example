@@ -39,15 +39,13 @@ impl TransformExt for Transform {
     }
 }
 
-pub fn initialise_camera(world: &mut World, window_size: [f32; 2]) {
-    let (w, h) = (window_size[0], window_size[1]);
+pub fn initialise_camera(world: &mut World, [w, h]: [f32; 2]) {
     let (half_w, half_h) = (w * 0.5, h * 0.5);
-
     let transform = Transform::from_xyz(half_w, half_h, 1.0);
     world
         .create_entity()
         .with(Camera::from(Projection::orthographic(
-            half_w, half_w, -half_h, half_h
+            -half_w, half_w, -half_h, half_h
         )))
         .with(transform)
         .build();
@@ -105,8 +103,8 @@ pub mod mouse {
     pub struct Mouse {
         pub x: f32,
         pub y: f32,
-        pub mx: f32,
-        pub my: f32,
+        pub dx: f32,
+        pub dy: f32,
 
         state: HashMap<MouseButton, bool>,
         press: HashSet<MouseButton>,
@@ -143,8 +141,8 @@ pub mod mouse {
         fn position_update(&mut self, input: &InputHandler<String, String>) {
             if let Some(mouse_pos) = input.mouse_position() {
                 let (x, y) = (mouse_pos.0 as f32, 500.0 - mouse_pos.1 as f32);
-                self.mx = x - self.x;
-                self.my = y - self.y;
+                self.dx = x - self.x;
+                self.dy = y - self.y;
                 self.x = x;
                 self.y = y;
             }

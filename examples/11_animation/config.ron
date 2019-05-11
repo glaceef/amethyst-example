@@ -1,4 +1,4 @@
 (
-  title: "example: 11_animation",
-  dimensions: Some((500, 500))
+  title: "amethyst: 11_animation",
+  dimensions: Some((500, 500)),
 )
