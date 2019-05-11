@@ -1,4 +1,4 @@
-// examples/03_move_to_mouse/main.rs
+// examples/04_create_and_destroy/main.rs
 
 use amethyst::{
     prelude::*,
@@ -27,7 +27,26 @@ use amethyst::{
     }
 };
 
-struct Icon;
+use amethyst_test::{
+    TransformExt,
+    initialise_camera,
+    load_sprite_sheet,
+    is_mouse_down,
+};
+
+struct Icon {
+    dx: f32,
+    dy: f32,
+}
+impl Icon {
+    fn new() -> Self {
+        let rng = rand::thread_rng();
+        Icon{
+            dx: rng::gen_range(-5.0, 5.0),
+            dy: rng::gen_range(-5.0, 5.0),
+        }
+    }
+}
 
 impl Component for Icon {
     type Storage = DenseVecStorage<Self>;
@@ -38,16 +57,24 @@ struct ExampleState;
 impl SimpleState for ExampleState {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
-        initialise_camera(world);
+        initialise_camera(world, [500.0, 500.0]);
         world.register::<Icon>();
         initialise_icon(world);
     }
 
     fn handle_event(
         &mut self,
-        _: StateData<'_, GameData<'_, '_>>,
+        data: StateData<'_, GameData<'_, '_>>,
         event: StateEvent,
     ) -> SimpleTrans {
+        let world = data.world;
+        if is_mouse_down(&e, MouseButton::Left) {
+            // create
+        }
+        if is_mouse_down(&e, MouseButton::Right) {
+            // destroy
+        }
+
         if let StateEvent::Window(e) = event {
             if is_key_down(&e, VirtualKeyCode::Escape) {
                 return Trans::Quit;
@@ -63,7 +90,6 @@ impl<'s> System<'s> for MoveSystem {
     type SystemData = (
         ReadStorage<'s, Icon>,
         WriteStorage<'s, Transform>,
-        Read<'s, InputHandler<String, String>>,
     );
 
     fn run(&mut self, (icons, mut transforms, input): Self::SystemData) {
@@ -89,7 +115,7 @@ fn main() -> amethyst::Result<()> {
                 Some(DepthMode::LessEqualWrite)
             ))
     );
-    let config = DisplayConfig::load("./examples/03_move_to_mouse/config.ron");
+    let config = DisplayConfig::load("./examples/04_create_and_destroy/config.ron");
     let render_bundle = RenderBundle::new(pipe, Some(config));
 
     let input_bundle = InputBundle::<String, String>::new();
@@ -103,7 +129,7 @@ fn main() -> amethyst::Result<()> {
         .with(MoveSystem, "move-system", &[]);
 
     Application::new(
-        "./examples/03_move_to_mouse/",
+        "./examples/04_create_and_destroy/",
         ExampleState,
         game_data
     )?.run();
@@ -111,50 +137,21 @@ fn main() -> amethyst::Result<()> {
     Ok(())
 }
 
-fn initialise_camera(world: &mut World) {
-    let mut transform = Transform::default();
-        transform.set_xyz(250.0, 250.0, 1.0);
-    world.create_entity()
-        .with(Camera::from(Projection::orthographic(
-            -250.0, 250.0, -250.0, 250.0
-        )))
-        .with(transform)
-        .build();
-}
-
 fn initialise_icon(world: &mut World) {
-    let sprite_sheet_handle = {
-        let loader = world.read_resource::<Loader>();
-        let texture_handle = {
-            let texture_storage = world.read_resource::<AssetStorage<Texture>>();
-            loader.load(
-                "icon.png",
-                PngFormat,
-                TextureMetadata::srgb_scale(),
-                (),
-                &texture_storage,
-            )
-        };
-
-        let sprite_sheet_store = world.read_resource::<AssetStorage<SpriteSheet>>();
-        loader.load(
-            "spritesheet.ron",
-            SpriteSheetFormat,
-            texture_handle,
-            (),
-            &sprite_sheet_store,
-        )
-    };
+    let sprite_sheet = load_sprite_sheet(
+        world,
+        "icon.png",
+        "spritesheet.ron"
+    );
 
     let sprite_render = SpriteRender {
-        sprite_sheet: sprite_sheet_handle,
+        sprite_sheet: sprite_sheet,
         sprite_number: 0,
     };
 
-    let mut transform = Transform::default();
-        transform.set_xyz(250.0, 250.0, 0.0);
+    let mut transform = Transform::from_xyz(250.0, 250.0, 0.0);
     world.create_entity()
-        .with(Icon)
+        .with(Icon::new())
         .with(sprite_render)
         .with(transform)
         .build();

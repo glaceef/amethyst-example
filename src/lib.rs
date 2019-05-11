@@ -39,13 +39,15 @@ impl TransformExt for Transform {
     }
 }
 
-pub fn initialise_camera(world: &mut World) {
-    world.register::<Camera>();
-    let transform = Transform::from_xyz(0.0, 0.0, 1.0);
+pub fn initialise_camera(world: &mut World, window_size: [f32; 2]) {
+    let (w, h) = (window_size[0], window_size[1]);
+    let (half_w, half_h) = (w * 0.5, h * 0.5);
+
+    let transform = Transform::from_xyz(half_w, half_h, 1.0);
     world
         .create_entity()
         .with(Camera::from(Projection::orthographic(
-            0.0, 500.0, 0.0, 500.0
+            half_w, half_w, -half_h, half_h
         )))
         .with(transform)
         .build();

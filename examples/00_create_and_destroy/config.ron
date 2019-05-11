@@ -1,0 +1,4 @@
+(
+  title: "amethyst: 03_key_input",
+  dimensions: Some((500, 500)),
+)
