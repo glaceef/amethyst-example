@@ -35,11 +35,12 @@ use amethyst_test::{
 };
 
 struct Icon {
+    id: u32,
     dx: f32,
     dy: f32,
 }
 impl Icon {
-    fn new() -> Self {
+    fn new(id: u32) -> Self {
         let rng = rand::thread_rng();
         Icon{
             dx: rng::gen_range(-5.0, 5.0),
@@ -64,23 +65,66 @@ impl SimpleState for ExampleState {
 
     fn handle_event(
         &mut self,
-        data: StateData<'_, GameData<'_, '_>>,
+        _: StateData<'_, GameData<'_, '_>>,
         event: StateEvent,
     ) -> SimpleTrans {
-        let world = data.world;
-        if is_mouse_down(&e, MouseButton::Left) {
-            // create
-        }
-        if is_mouse_down(&e, MouseButton::Right) {
-            // destroy
-        }
-
         if let StateEvent::Window(e) = event {
             if is_key_down(&e, VirtualKeyCode::Escape) {
                 return Trans::Quit;
             }
         }
         Trans::None
+    }
+}
+
+struct CreateDestroySystem(u32);
+
+impl<'s> System<'s> for CreateDestroySystem {
+    type SystemData = (
+        WriteStorage<'s, Icon>
+        Entities<'s>,
+        Read<'s, Mouse>
+    );
+
+    fn run(&mut self, (icons, entities, mouse): Self::SystemData) {
+        // create
+        if mouse.get_down(MouseButton::Left) {
+            let sprite_sheet = load_sprite_sheet(
+                world,
+                "icon.png",
+                "spritesheet.ron"
+            );
+            // こいつをResourceにする？
+            let sprite_render = SpriteRender {
+                sprite_sheet: sprite_sheet,
+                sprite_number: 0,
+            };
+
+            let id = self.0;
+            let mut transform = Transform::from_xyz(250.0, 250.0, 0.0);
+            entities.create()
+                .with(Icon::new(id))
+                .with(sprite_render)
+                .with(transform)
+                .build();
+            self.0 += 1;
+        }
+
+        // destroy
+        if mouse.get_down(MouseButton::Right) && self.0 > 0 {
+            let id = self.0;
+            if let Some(entity) = (||{
+                for (entity, icon) in (&entities, &mut icons).join() {
+                    if icon.id == id {
+                        return Some(entity);
+                    }
+                }
+                None
+            })() {
+                entities.delete(entity).unwrap();
+                self.0 -= 1;
+            }
+        }
     }
 }
 
@@ -92,13 +136,10 @@ impl<'s> System<'s> for MoveSystem {
         WriteStorage<'s, Transform>,
     );
 
-    fn run(&mut self, (icons, mut transforms, input): Self::SystemData) {
-        if input.button_is_down(Button::Mouse(MouseButton::Left)) {
-            if let Some((x, y)) = input.mouse_position() {
-                for (_icon, transform) in (&icons, &mut transforms).join() {
-                    transform.set_xyz(x as f32, 500.0 - y as f32, 0.0);
-                }
-            }
+    fn run(&mut self, (icons, mut transforms): Self::SystemData) {
+        for (icon, transform) in (&icons, &mut transforms).join() {
+            transform.move_right(icon.dx);
+            transform.move_up(icon.dy);
         }
     }
 }
