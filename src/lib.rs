@@ -20,12 +20,12 @@ use amethyst::{
     },
     ecs::prelude::{
         DispatcherBuilder,
-        System,
-        Write, Read,
+        System, Write, Read
     },
+    shred::DynamicSystemData,
     winit::{
         Event, WindowEvent, ElementState, MouseButton
-    },
+    }
 };
 
 pub trait TransformExt {
@@ -177,6 +177,11 @@ pub mod mouse {
             Write<'s, Mouse>,
             Read<'s, InputHandler<String, String>>
         );
+
+        // fn setup(&mut self, res: &mut Resources) {
+        //     res.insert(Mouse::default());
+        //     <Self::SystemData as DynamicSystemData>::setup(&self.accessor(), res);
+        // }
 
         fn run(&mut self, (mut mouse, input): Self::SystemData) {
             mouse.position_update(&input);

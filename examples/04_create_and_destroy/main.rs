@@ -6,7 +6,8 @@ use amethyst::{
         TransformBundle, Transform
     },
     renderer::{
-        Pipeline, Stage, DrawFlat2D, ColorMask, ALPHA, DepthMode, DisplayConfig, RenderBundle,
+        Pipeline, Stage, DrawFlat2D, ColorMask, ALPHA, DepthMode,
+        DisplayConfig, RenderBundle,
         SpriteRender
     },
     input::{
@@ -14,8 +15,8 @@ use amethyst::{
         is_key_down
     },
     ecs::prelude::{
-        System,
-        Component, DenseVecStorage, Entity,
+        System, SystemData, Resources,
+        Component, DenseVecStorage,
         Entities, Read, WriteStorage, ReadExpect, Join
     },
     winit::{
@@ -57,7 +58,7 @@ impl SimpleState for ExampleState {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
         initialise_camera(world, [500.0, 500.0]);
-        initialise_mouse(world);
+        // initialise_mouse(world);
         world.register::<Icon>();
 
         let sprite_sheet = load_sprite_sheet(
@@ -117,17 +118,13 @@ impl<'s> System<'s> for CreateDestroySystem {
 
         // destroy
         if mouse.get_down(MouseButton::Right) && self.0 > 0 {
-            let id = self.0;
-            if let Some(entity) = (||{
-                for (entity, icon) in (&entities, &mut icons).join() {
-                    if icon.id == id {
-                        return Some(entity);
-                    }
+            let search_id = self.0;
+            for (entity, icon) in (&entities, &icons).join() {
+                if icon.id == search_id {
+                    entities.delete(entity).unwrap();
+                    self.0 -= 1;
+                    break;
                 }
-                None
-            })() {
-                entities.delete(entity).unwrap();
-                self.0 -= 1;
             }
         }
     }
@@ -142,29 +139,23 @@ impl<'s> System<'s> for MoveSystem {
     );
 
     fn run(&mut self, (mut icons, mut transforms): Self::SystemData) {
-        let mut count = 0;
+        let mut amount = 0;
         for (icon, transform) in (&mut icons, &mut transforms).join() {
             let (x, y) = {
                 let translation = transform.translation();
                 (translation.x, translation.y)
             };
-            if {
-                let next_x = x + icon.dx;
-                next_x < 25.0 || 475.0 <= next_x
-            } {
+            let (next_x, next_y) = (x + icon.dx, y + icon.dy);
+            if next_x < 25.0 || 475.0 <= next_x {
                 icon.dx = -icon.dx;
             }
-            if {
-                let next_y = y + icon.dy;
-                next_y < 25.0 || 475.0 <= next_y
-            } {
+            if next_y < 25.0 || 475.0 <= next_y {
                 icon.dy = -icon.dy;
             }
-            transform.move_right(icon.dx);
-            transform.move_up(icon.dy);
-            count += 1;
+            transform.translate_xyz(icon.dx, icon.dy, 0.0);
+            amount += 1;
         }
-        print!("\ritem amount: {}", count);
+        print!("\ritem amount: {}", amount);
     }
 }
 
@@ -180,7 +171,7 @@ fn main() -> amethyst::Result<()> {
                 Some(DepthMode::LessEqualWrite)
             ))
     );
-    let config = DisplayConfig::load("./examples/00_create_and_destroy/config.ron");
+    let config = DisplayConfig::load("./examples/04_create_and_destroy/config.ron");
     let render_bundle = RenderBundle::new(pipe, Some(config));
 
     let transform_bundle = TransformBundle::new();
@@ -197,7 +188,7 @@ fn main() -> amethyst::Result<()> {
         .with(MoveSystem, "move-system", &[]);
 
     Application::new(
-        "./examples/00_create_and_destroy/",
+        "./examples/04_create_and_destroy/",
         ExampleState,
         game_data
     )?.run();

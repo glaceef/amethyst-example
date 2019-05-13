@@ -15,10 +15,6 @@ amethyst = "*"
 rand = "*"
 
 [[example]]
-name = "00"
-path = "examples/00_create_and_destroy/main.rs"
-
-[[example]]
 name = "01"
 path = "examples/01_create_window/main.rs"
 
@@ -36,7 +32,7 @@ path = "examples/03_move_to_mouse/main.rs"
 
 [[example]]
 name = "04"
-path = "examples/04_move_image/main.rs"
+path = "examples/04_create_and_destroy/main.rs"
 
 [[example]]
 name = "05"
