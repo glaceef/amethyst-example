@@ -1,4 +1,4 @@
 (
-  title: "amethyst: 02_image",
+  title: "amethyst: 02-2_colored_image",
   dimensions: Some((500, 500)),
 )

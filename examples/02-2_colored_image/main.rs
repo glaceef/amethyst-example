@@ -27,18 +27,18 @@ struct ExampleState;
 impl SimpleState for ExampleState {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
-        init_camera(world);
-        init_image(world);
+        initialise_camera(world);
+        initialise_image(world);
     }
 }
 
-struct TextureSystem(u32);
+struct ColorSystem(u32);
 
-impl<'s> System<'s> for TextureSystem {
+impl<'s> System<'s> for ColorSystem {
     type SystemData = WriteStorage<'s, Rgba>;
 
-    fn run(&mut self, mut color: Self::SystemData) {
-        if let Some(ref mut color) = (&mut color).join().next() {
+    fn run(&mut self, mut colors: Self::SystemData) {
+        if let Some(ref mut color) = (&mut colors).join().next() {
             let c = 1.0 - (self.0 as f32).to_radians().sin().abs();
             color.1 = c;
             color.2 = c;
@@ -48,7 +48,7 @@ impl<'s> System<'s> for TextureSystem {
 }
 
 fn main() -> amethyst::Result<()> {
-    amethyst::start_logger(Default::default());
+    // amethyst::start_logger(Default::default());
 
     let config = DisplayConfig::load("./examples/02-2_colored_image/config.ron");
     let pipe = Pipeline::build().with_stage(
@@ -67,7 +67,7 @@ fn main() -> amethyst::Result<()> {
     let game_data = GameDataBuilder::new()
         .with_bundle(render_bundle)?
         .with_bundle(transform_bundle)?
-        .with(TextureSystem(0), "texture-system", &[]);
+        .with(ColorSystem(0), "color-system", &[]);
 
     let mut game = Application::new("./examples/02-2_colored_image/", ExampleState, game_data)?;
 
@@ -76,20 +76,19 @@ fn main() -> amethyst::Result<()> {
     Ok(())
 }
 
-fn init_camera(world: &mut World) {
-    let camera = Camera::from(Projection::orthographic(
-        -250.0, 250.0, -250.0, 250.0
-    ));
+pub fn initialise_camera(world: &mut World) {
     let mut transform = Transform::default();
-    transform.set_xyz(250.0, 250.0, 1.0);
+        transform.set_xyz(250.0, 250.0, 0.0);
     world
         .create_entity()
-        .with(camera)
+        .with(Camera::from(Projection::orthographic(
+            -250.0, 250.0, -250.0, 250.0
+        )))
         .with(transform)
         .build();
 }
 
-fn init_image(world: &mut World) {
+fn initialise_image(world: &mut World) {
     let texture_handle = {
         let loader = world.read_resource::<Loader>();
         let texture_storage = world.read_resource::<AssetStorage<Texture>>();
@@ -103,11 +102,11 @@ fn init_image(world: &mut World) {
     };
 
     let mut transform = Transform::default();
-    transform.set_xyz(250.0, 250.0, 0.0);
+        transform.set_xyz(250.0, 250.0, 0.0);
     world
         .create_entity()
         .with(texture_handle)
-        .with(Rgba::red())
+        .with(Rgba::RED) // new!
         .with(transform)
         .build();
 }

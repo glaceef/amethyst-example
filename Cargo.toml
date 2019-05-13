@@ -36,11 +36,11 @@ path = "examples/04_create_and_destroy/main.rs"
 
 [[example]]
 name = "05"
-path = "examples/05_click/main.rs"
+path = "examples/05_keyboard_input/main.rs"
 
 [[example]]
 name = "06"
-path = "examples/06_create_item/main.rs"
+path = "examples/06_animation/main.rs"
 
 [[example]]
 name = "07"
@@ -57,10 +57,6 @@ path = "examples/09_dragging_icon/main.rs"
 [[example]]
 name = "10"
 path = "examples/10_mouse_getdown/main.rs"
-
-[[example]]
-name = "11"
-path = "examples/11_animation/main.rs"
 
 [[example]]
 name = "12"

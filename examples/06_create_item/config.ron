@@ -1,5 +1,0 @@
-(
-  title: "amethyst: create_item",
-  dimensions: Some((500, 500)),
-  fullscreen: false,
-)
