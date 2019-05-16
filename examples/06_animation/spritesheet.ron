@@ -1,24 +1,80 @@
 (
-    spritesheet_width: 128,
+    spritesheet_width: 256,
     spritesheet_height: 256,
     sprites: [
         (
-            x: 0,
-            y: 0,
-            width: 32,
-            height: 49,
+            x: 1,
+            y: 1,
+            width: 48,
+            height: 48,
         ),
         (
-            x: 32,
-            y: 0,
-            width: 32,
-            height: 49,
+            x: 51,
+            y: 1,
+            width: 48,
+            height: 48,
         ),
         (
-            x: 64,
-            y: 0,
-            width: 32,
-            height: 49,
+            x: 101,
+            y: 1,
+            width: 48,
+            height: 48,
+        ),
+        (
+            x: 151,
+            y: 1,
+            width: 48,
+            height: 48,
+        ),
+
+        (
+            x: 1,
+            y: 51,
+            width: 48,
+            height: 48,
+        ),
+        (
+            x: 51,
+            y: 51,
+            width: 48,
+            height: 48,
+        ),
+        (
+            x: 101,
+            y: 51,
+            width: 48,
+            height: 48,
+        ),
+        (
+            x: 151,
+            y: 51,
+            width: 48,
+            height: 48,
+        ),
+
+        (
+            x: 1,
+            y: 101,
+            width: 48,
+            height: 48,
+        ),
+        (
+            x: 51,
+            y: 101,
+            width: 48,
+            height: 48,
+        ),
+        (
+            x: 101,
+            y: 101,
+            width: 48,
+            height: 48,
+        ),
+        (
+            x: 151,
+            y: 101,
+            width: 48,
+            height: 48,
         ),
     ],
 )

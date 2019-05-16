@@ -22,7 +22,6 @@ use amethyst::{
         DispatcherBuilder,
         System, Write, Read
     },
-    shred::DynamicSystemData,
     winit::{
         Event, WindowEvent, ElementState, MouseButton
     }
