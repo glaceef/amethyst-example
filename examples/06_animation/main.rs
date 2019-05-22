@@ -84,14 +84,13 @@ impl<'s> System<'s> for PlayerSpriteSystem {
     fn run(&mut self, (players, mut sprites, player): Self::SystemData) {
         match (players.get(player.0), sprites.get_mut(player.0)) {
             (Some(player), Some(sprite)) => {
-                sprite.sprite_number = func(self.0, 4, 7) + player.0.offset();
+                sprite.sprite_number = num_extend(self.0, 4, 7) + player.0.offset();
                 self.0 += 1;
             }
             _ => {}
         }
 
-        // TODO::rename
-        fn func(n: usize, size: usize, repeat: usize) -> usize {
+        fn num_extend(n: usize, size: usize, repeat: usize) -> usize {
             n % (size * repeat) / repeat
         }
     }
@@ -127,13 +126,13 @@ impl<'s> System<'s> for PlayerMoveSystem {
 }
 
 fn main() -> amethyst::Result<()> {
-    amethyst::start_logger(Default::default());
+    // amethyst::start_logger(Default::default());
 
     let app_root = PathBuf::from(application_root_dir()).join("examples/06_animation/");
 
     let pipe = Pipeline::build().with_stage(
         Stage::with_backbuffer()
-            .clear_target([1.0; 4], 1.0)
+            .clear_target([0.001, 0.0, 0.02, 1.0], 1.0)
             .with_pass(DrawFlat2D::new().with_transparency(
                 ColorMask::all(),
                 ALPHA,
