@@ -1,3 +1,5 @@
+// examples/06_animation/main.rs
+
 use amethyst::{
     prelude::*,
     core::transform::{

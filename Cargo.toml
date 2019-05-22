@@ -13,6 +13,8 @@ amethyst = "*"
 [dev-dependencies]
 amethyst = "*"
 rand = "*"
+serde = "1.0.81"
+serde_derive = "*"
 
 [[example]]
 name = "01"
