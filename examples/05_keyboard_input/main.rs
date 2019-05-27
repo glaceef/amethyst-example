@@ -1,4 +1,4 @@
-// examples/06_animation/main.rs
+// examples/0505_keyboard_input/main.rs
 
 use amethyst::{
     prelude::*,
@@ -17,14 +17,7 @@ use amethyst::{
     winit::VirtualKeyCode,
 };
 
-use serde::*;
-
 use std::path::PathBuf;
-
-#[derive(Hash, Eq, PartialEq, Clone, Serialize, Deserialize)]
-enum Key {
-    X_AXIS, Y_AXIS
-}
 
 struct ExampleState;
 
@@ -46,11 +39,11 @@ impl SimpleState for ExampleState {
 struct ExampleSystem;
 
 impl<'s> System<'s> for ExampleSystem {
-    type SystemData = Read<'s, InputHandler<Key, String>>;
+    type SystemData = Read<'s, InputHandler<String, String>>;
 
     fn run(&mut self, input: Self::SystemData) {
-        let x_axis = input.axis_value(&Key::X_AXIS);
-        let y_axis = input.axis_value(&Key::Y_AXIS);
+        let x_axis = input.axis_value("x_axis");
+        let y_axis = input.axis_value("y_axis");
         match (x_axis, y_axis) {
             (Some(x_axis), Some(y_axis)) => {
                 println!("x_axis: {}, y_axis: {}", x_axis, y_axis);
@@ -73,7 +66,7 @@ fn main() -> amethyst::Result<()> {
     let config = DisplayConfig::load(app_root.join("config.ron"));
     let render_bundle = RenderBundle::new(pipe, Some(config));
 
-    let input_bundle = InputBundle::<Key, String>::new()
+    let input_bundle = InputBundle::<String, String>::new()
         .with_bindings_from_file(app_root.join("bindings.ron"))?;
 
     let game_data = GameDataBuilder::new()

@@ -1,7 +1,7 @@
 (
   axes: {
-    X_AXIS: Emulated(pos: Key(Right), neg: Key(Left)),
-    Y_AXIS: Emulated(pos: Key(Up), neg: Key(Down)),
+    "x_axis": Emulated(pos: Key(Right), neg: Key(Left)),
+    "y_axis": Emulated(pos: Key(Up), neg: Key(Down)),
   },
   actions: {},
 )
