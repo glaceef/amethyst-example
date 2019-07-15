@@ -8,11 +8,11 @@ edition = "2018"
 name = "amethyst_test"
 
 [dependencies]
-amethyst = "*"
+amethyst = "0.11.1"
 
-[dev-dependencies]
-amethyst = "*"
-rand = "*"
+[features]
+vulkan = ["amethyst/vulkan"]
+metal = ["amethyst/metal"]
 
 [[example]]
 name = "01"
@@ -48,7 +48,7 @@ path = "examples/07_bounding_icons/main.rs"
 
 [[example]]
 name = "08"
-path = "examples/08_physical_icons/main.rs"
+path = "examples/08_change_state/main.rs"
 
 [[example]]
 name = "09"
@@ -73,3 +73,7 @@ path = "examples/14_single_entity/main.rs"
 [[example]]
 name = "15"
 path = "examples/15_delete_entity/main.rs"
+
+[[example]]
+name = "16"
+path = "examples/16_variable_text/main.rs"

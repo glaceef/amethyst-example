@@ -1,4 +1,4 @@
-// examples/06_animation/main.rs
+// examples/07_minigame/main.rs
 
 use amethyst::{
     prelude::*,

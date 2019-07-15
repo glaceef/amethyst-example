@@ -1,0 +1,18 @@
+(
+    spritesheet_width: 50,
+    spritesheet_height: 50,
+    sprites: [
+        (
+            x: 0,
+            y: 0,
+            width: 25,
+            height: 25,
+        ),
+        (
+            x: 25,
+            y: 25,
+            width: 25,
+            height: 25,
+        ),
+    ],
+)

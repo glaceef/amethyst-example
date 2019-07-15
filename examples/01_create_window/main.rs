@@ -2,12 +2,9 @@
 
 use amethyst::{
     prelude::*,
-    renderer::{
-        Pipeline, Stage, DrawFlat2D,
-        DisplayConfig,
-        RenderBundle,
-    },
+    window::WindowBundle,
     input::is_key_down,
+    utils::application_dir,
     winit::VirtualKeyCode,
 };
 
@@ -29,26 +26,14 @@ impl SimpleState for ExampleState {
 }
 
 fn main() -> amethyst::Result<()> {
-    amethyst::start_logger(Default::default());
+    // amethyst::start_logger(Default::default());
 
-    let pipe = Pipeline::build().with_stage(
-        Stage::with_backbuffer()
-            .clear_target([1.0; 4], 1.0)
-            .with_pass(DrawFlat2D::new())
-    );
-
-    let config = DisplayConfig::load("./examples/01_create_window/config.ron");
-    let render_bundle = RenderBundle::new(pipe, Some(config));
+    let app_root = application_dir("examples/01_create_window/")?;
 
     let game_data = GameDataBuilder::new()
-        .with_bundle(render_bundle)?;
-    let mut game = Application::new(
-        "./examples/01_create_window/",
-        ExampleState,
-        game_data
-    )?;
+        .with_bundle(WindowBundle::from_config_path(app_root.join("config.ron")))?;
 
-    game.run();
+    Application::new(app_root, ExampleState, game_data)?.run();
 
     Ok(())
 }

@@ -1,29 +1,32 @@
 use amethyst::{
     prelude::*,
     core::{
-        bundle::{
-            SystemBundle,
-            Result as BundleResult,
-        },
-        transform::Transform
+        bundle::SystemBundle,
+        transform::Transform,
+        math::Vector3
     },
     renderer::{
-        Camera, Projection,
-        SpriteSheet, SpriteSheetHandle, SpriteSheetFormat, PngFormat,
-        Texture, TextureMetadata,
+        camera::{
+            Camera, Projection
+        },
+        sprite::{
+            SpriteSheet, SpriteSheetHandle, SpriteSheetFormat,
+        },
+        ImageFormat, Texture
     },
     input::{
-        InputHandler,
+        InputHandler, StringBindings
     },
     assets::{
         Loader, AssetStorage,
     },
+    error::Error,
     ecs::prelude::{
         DispatcherBuilder,
         System, Write, Read
     },
     winit::{
-        Event, WindowEvent, ElementState, MouseButton
+        Event, WindowEvent, ElementState, MouseButton, VirtualKeyCode
     }
 };
 
@@ -33,7 +36,7 @@ pub trait TransformExt {
 impl TransformExt for Transform {
     fn from_xyz(x: f32, y: f32, z: f32) -> Self {
         let mut transform = Self::default();
-        transform.set_xyz(x, y, z);
+            transform.set_translation(Vector3::new(x, y, z));
         transform
     }
 }
@@ -44,7 +47,7 @@ pub fn initialise_camera(world: &mut World, [w, h]: [f32; 2]) {
     world
         .create_entity()
         .with(Camera::from(Projection::orthographic(
-            -half_w, half_w, -half_h, half_h
+            -half_w, half_w, -half_h, half_h, 0.0, 0.0
         )))
         .with(transform)
         .build();
@@ -60,8 +63,7 @@ pub fn load_sprite_sheet(
         let texture_storage = world.read_resource::<AssetStorage<Texture>>();
         loader.load(
             image_path,
-            PngFormat,
-            TextureMetadata::srgb_scale(),
+            ImageFormat::default(),
             (),
             &texture_storage,
         )
@@ -71,8 +73,7 @@ pub fn load_sprite_sheet(
     let sprite_sheet_storage = world.read_resource::<AssetStorage<SpriteSheet>>();
     loader.load(
         spritesheet_path,
-        SpriteSheetFormat,
-        texture_handle,
+        SpriteSheetFormat(texture_handle),
         (),
         &sprite_sheet_storage,
     )
@@ -90,6 +91,15 @@ pub fn is_mouse_down(event: &Event, mouse_button: MouseButton) -> bool {
         }
     }
     false
+}
+
+pub fn get_keyboard_input(event: &Event) -> Option<VirtualKeyCode> {
+    if let Event::WindowEvent { ref event, .. } = event { // refがないとmoveがおきる
+        if let WindowEvent::KeyboardInput{ input, .. } = event {
+            return input.virtual_keycode;
+        }
+    }
+    None
 }
 
 pub mod mouse {
@@ -137,7 +147,7 @@ pub mod mouse {
             self.release.contains(&button)
         }
 
-        fn position_update(&mut self, input: &InputHandler<String, String>) {
+        fn position_update(&mut self, input: &InputHandler<StringBindings>) {
             if let Some(mouse_pos) = input.mouse_position() {
                 let (x, y) = (mouse_pos.0 as f32, 500.0 - mouse_pos.1 as f32);
                 self.dx = x - self.x;
@@ -147,7 +157,7 @@ pub mod mouse {
             }
         }
 
-        fn state_update(&mut self, input: &InputHandler<String, String>) {
+        fn state_update(&mut self, input: &InputHandler<StringBindings>) {
             let down_buttons: HashSet<&MouseButton>
                 = input.mouse_buttons_that_are_down().collect();
             self.press.clear();
@@ -174,13 +184,8 @@ pub mod mouse {
     impl<'s> System<'s> for MouseSystem {
         type SystemData = (
             Write<'s, Mouse>,
-            Read<'s, InputHandler<String, String>>
+            Read<'s, InputHandler<StringBindings>>
         );
-
-        // fn setup(&mut self, res: &mut Resources) {
-        //     res.insert(Mouse::default());
-        //     <Self::SystemData as DynamicSystemData>::setup(&self.accessor(), res);
-        // }
 
         fn run(&mut self, (mut mouse, input): Self::SystemData) {
             mouse.position_update(&input);
@@ -205,7 +210,7 @@ pub mod mouse {
     }
 
     impl<'a, 'b, 'c> SystemBundle<'a, 'b> for MouseBundle<'c> {
-        fn build(self, builder: &mut DispatcherBuilder<'a, 'b>) -> BundleResult<()> {
+        fn build(self, builder: &mut DispatcherBuilder<'a, 'b>) -> Result<(), Error> {
             let dep = {
                 let mut vec = self.dep.to_vec();
                 vec.push("input_system");

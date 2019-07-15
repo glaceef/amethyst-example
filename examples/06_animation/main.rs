@@ -63,7 +63,7 @@ impl<'s> System<'s> for CharaSpriteSystem {
     fn run(&mut self, (mut sprites, player): Self::SystemData) {
         match sprites.get_mut(player.0) {
             Some(sprite) => {
-                sprite.sprite_number = num_extend(self.0, 4, 16);
+                sprite.sprite_number = num_extend(self.0, 4, 10);
                 self.0 += 1;
             }
             _ => {}
