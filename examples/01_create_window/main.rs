@@ -1,5 +1,7 @@
 // examples/01_create_window/main.rs
 
+// cargo run --example 01 --features vulkan
+
 use amethyst::{
     prelude::*,
     window::WindowBundle,
