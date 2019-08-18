@@ -18,12 +18,15 @@ impl SimpleState for ExampleState {
         _: StateData<'_, GameData<'_, '_>>,
         event: StateEvent,
     ) -> SimpleTrans {
-        if let StateEvent::Window(e) = event {
-            if is_key_down(&e, VirtualKeyCode::Escape) {
-                return Trans::Quit;
+        if let StateEvent::Window(event) = event {
+            if is_key_down(&event, VirtualKeyCode::Escape) {
+                Trans::Quit
+            } else {
+                Trans::None
             }
+        } else {
+            Trans::None
         }
-        Trans::None
     }
 }
 
@@ -32,10 +35,9 @@ fn main() -> amethyst::Result<()> {
 
     let app_root = application_dir("examples/01_create_window/")?;
 
-    let game_data = GameDataBuilder::new()
-        .with_bundle(WindowBundle::from_config_path(app_root.join("config.ron")))?;
+    let game_data = GameDataBuilder::default()
+        .with_bundle(WindowBundle::from_config_path(app_root.join("display_config.ron")))?;
 
     Application::new(app_root, ExampleState, game_data)?.run();
-
     Ok(())
 }
