@@ -6,14 +6,18 @@ use amethyst::{
         Transform, TransformBundle
     },
     renderer::{
-        DisplayConfig, Pipeline, Stage, DrawFlat2D, ColorMask, ALPHA, DepthMode,
-        Camera, Projection,
-        Texture, PngFormat, TextureMetadata,
-        RenderBundle
+        RenderingBundle,
+        plugins::{
+            RenderToWindow, RenderFlat2D,
+        },
+        types::DefaultBackend,
+        Camera,
+        Texture, ImageFormat,
     },
     assets::{
         Loader, AssetStorage
     },
+    utils::application_dir,
 };
 
 struct ExampleState;
@@ -29,17 +33,12 @@ impl SimpleState for ExampleState {
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(Default::default());
 
-    let config = DisplayConfig::load("./examples/02_image/config.ron");
-    let pipe = Pipeline::build().with_stage(
-        Stage::with_backbuffer()
-            .clear_target([0.0, 0.0, 0.0, 1.0], 1.0)
-            .with_pass(DrawFlat2D::new().with_transparency(
-                ColorMask::all(),
-                ALPHA,
-                Some(DepthMode::LessEqualWrite),
-            )),
-    );
-    let render_bundle = RenderBundle::new(pipe, Some(config));
+    let app_root = application_dir("./examples/02_image/")?;
+
+    let render_bundle = RenderingBundle::<DefaultBackend>::new().with_plugin(
+        RenderToWindow::from_config_path(app_root.join("display_config.ron"))
+            .with_clear([0.0, 0.0, 0.0, 1.0]),
+    ).with_plugin(RenderFlat2D::default());
 
     let transform_bundle = TransformBundle::new();
 
@@ -55,38 +54,29 @@ fn main() -> amethyst::Result<()> {
 }
 
 fn init_camera(world: &mut World) {
-    let camera = Camera::from(Projection::orthographic(
-        -250.0, 250.0, -250.0, 250.0
-        // Projection::perspective(l, r, b, t)   : 遠近感を表現
-        // Projection::orthographic(aspect, fov) : 遠近感なし、平面で描画
-    ));
+    let camera = Camera::standard_2d(500.0, 500.0);
     let mut transform = Transform::default();
-    transform.set_xyz(250.0, 250.0, 1.0);
+    transform.set_translation_xyz(250.0, 250.0, 1.0);
     world
         .create_entity()
-        .with(camera)
         .with(transform)
+        .with(camera)
         .build();
 }
 
 fn init_image(world: &mut World) {
-    let texture_handle = {
-        let loader = world.read_resource::<Loader>();
-        let texture_storage = world.read_resource::<AssetStorage<Texture>>();
-        loader.load(
-            "logo.png",
-            PngFormat,
-            TextureMetadata::srgb_scale(),
-            (),
-            &texture_storage,
-        )
-    };
+    let texture = world.read_resource::<Loader>().load(
+        "logo.png",
+        ImageFormat::default(),
+        (),
+        &world.read_resource::<AssetStorage<Texture>>(),
+    );
 
     let mut transform = Transform::default();
-    transform.set_xyz(250.0, 250.0, 0.0);
+    transform.set_translation_xyz(250.0, 250.0, 0.0);
     world
         .create_entity()
-        .with(texture_handle)
         .with(transform)
+        .with(texture)
         .build();
 }

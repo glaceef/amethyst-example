@@ -1,10 +1,12 @@
 // examples/01_create_window/main.rs
 
-// cargo run --example 01 --features vulkan
-
 use amethyst::{
     prelude::*,
-    window::WindowBundle,
+    renderer::{
+        RenderingBundle,
+        types::DefaultBackend,
+        plugins::{RenderToWindow, RenderFlat2D},
+    },
     input::is_key_down,
     utils::application_dir,
     winit::VirtualKeyCode,
@@ -18,22 +20,33 @@ impl SimpleState for ExampleState {
         _: StateData<'_, GameData<'_, '_>>,
         event: StateEvent,
     ) -> SimpleTrans {
-        if let StateEvent::Window(e) = event {
-            if is_key_down(&e, VirtualKeyCode::Escape) {
-                return Trans::Quit;
+        if let StateEvent::Window(event) = event {
+            if is_key_down(&event, VirtualKeyCode::Escape) {
+                Trans::Quit
+            } else {
+                Trans::None
             }
+        } else {
+            Trans::None
         }
-        Trans::None
     }
 }
 
 fn main() -> amethyst::Result<()> {
-    // amethyst::start_logger(Default::default());
+    amethyst::start_logger(Default::default());
 
     let app_root = application_dir("examples/01_create_window/")?;
 
-    let game_data = GameDataBuilder::new()
-        .with_bundle(WindowBundle::from_config_path(app_root.join("config.ron")))?;
+    let display_config_path = app_root.join("display_config.ron");
+    let render_bundle = RenderingBundle::<DefaultBackend>::new()
+        .with_plugin(
+            RenderToWindow::from_config_path(display_config_path)
+                .with_clear([1.0; 4]),
+        )
+        .with_plugin(RenderFlat2D::default());
+
+    let game_data = GameDataBuilder::default()
+        .with_bundle(render_bundle)?;
 
     Application::new(app_root, ExampleState, game_data)?.run();
 

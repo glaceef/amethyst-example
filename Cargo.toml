@@ -1,18 +1,14 @@
 [package]
-name = "amethyst-test"
+name = "amethyst-example"
 version = "0.1.0"
 authors = ["glaceef <masaki7322_art@yahoo.co.jp>"]
 edition = "2018"
 
 [lib]
-name = "amethyst_test"
+name = "amethyst_myutils"
 
 [dependencies]
-amethyst = "0.11.1"
-
-[features]
-vulkan = ["amethyst/vulkan"]
-metal = ["amethyst/metal"]
+amethyst = { version = "0.12.0", features = ["vulkan"] }
 
 [[example]]
 name = "01"
